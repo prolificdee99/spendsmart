@@ -14,15 +14,19 @@ import {
 } from "@shared/schema";
 import ws from "ws";
 
-neonConfig.webSocketConstructor = ws;
+class CustomWebSocket extends ws {
+  constructor(address: any, protocols?: any) {
+    super(address, protocols, {
+      rejectUnauthorized: false
+    });
+  }
+}
+
+neonConfig.webSocketConstructor = CustomWebSocket as any;
 neonConfig.pipelineConnect = false;
-neonConfig.wsProxy = undefined;
-neonConfig.useSecureWebSocket = true;
-neonConfig.forceDisablePgSSL = true;
 
 const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL,
-  ssl: false
+  connectionString: process.env.DATABASE_URL
 });
 const db = drizzle(pool);
 

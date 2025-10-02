@@ -9,11 +9,16 @@ import connectPgSimple from "connect-pg-simple";
 import { Pool, neonConfig } from "@neondatabase/serverless";
 import ws from "ws";
 
-neonConfig.webSocketConstructor = ws;
+class CustomWebSocket extends ws {
+  constructor(address: any, protocols?: any) {
+    super(address, protocols, {
+      rejectUnauthorized: false
+    });
+  }
+}
+
+neonConfig.webSocketConstructor = CustomWebSocket as any;
 neonConfig.pipelineConnect = false;
-neonConfig.wsProxy = undefined;
-neonConfig.useSecureWebSocket = true;
-neonConfig.forceDisablePgSSL = true;
 
 const PgSession = connectPgSimple(session);
 
@@ -43,8 +48,7 @@ if (!process.env.DATABASE_URL) {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const sessionPool = new Pool({ 
-    connectionString: process.env.DATABASE_URL,
-    ssl: false
+    connectionString: process.env.DATABASE_URL
   });
   
   app.use(
