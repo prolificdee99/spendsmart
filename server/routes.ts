@@ -51,6 +51,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     connectionString: process.env.DATABASE_URL
   });
   
+  app.set('trust proxy', 1);
+  
   app.use(
     session({
       store: new PgSession({
@@ -60,11 +62,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       secret: process.env.SESSION_SECRET!,
       resave: false,
       saveUninitialized: false,
+      name: 'sessionId',
+      rolling: true,
       cookie: {
-        secure: process.env.NODE_ENV === "production",
-        httpOnly: true,
+        secure: false,
+        httpOnly: false,
         maxAge: 1000 * 60 * 60 * 24 * 7,
         sameSite: 'lax',
+        path: '/',
       },
     })
   );
