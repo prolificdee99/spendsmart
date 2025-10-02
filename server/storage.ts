@@ -16,10 +16,13 @@ import ws from "ws";
 
 neonConfig.webSocketConstructor = ws;
 neonConfig.pipelineConnect = false;
+neonConfig.wsProxy = undefined;
+neonConfig.useSecureWebSocket = true;
+neonConfig.forceDisablePgSSL = true;
 
 const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: false
 });
 const db = drizzle(pool);
 

@@ -11,6 +11,9 @@ import ws from "ws";
 
 neonConfig.webSocketConstructor = ws;
 neonConfig.pipelineConnect = false;
+neonConfig.wsProxy = undefined;
+neonConfig.useSecureWebSocket = true;
+neonConfig.forceDisablePgSSL = true;
 
 const PgSession = connectPgSimple(session);
 
@@ -41,7 +44,7 @@ if (!process.env.DATABASE_URL) {
 export async function registerRoutes(app: Express): Promise<Server> {
   const sessionPool = new Pool({ 
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
+    ssl: false
   });
   
   app.use(
