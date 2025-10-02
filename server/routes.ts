@@ -6,7 +6,10 @@ import bcrypt from "bcryptjs";
 import session from "express-session";
 import { z } from "zod";
 import connectPgSimple from "connect-pg-simple";
-import { Pool } from "@neondatabase/serverless";
+import { Pool, neonConfig } from "@neondatabase/serverless";
+import ws from "ws";
+
+neonConfig.webSocketConstructor = ws;
 
 const PgSession = connectPgSimple(session);
 
@@ -17,6 +20,9 @@ declare module "express-session" {
 }
 
 function requireAuth(req: Request, res: Response, next: Function) {
+  console.log("Session data:", req.session);
+  console.log("Session ID:", req.sessionID);
+  console.log("Cookies:", req.headers.cookie);
   if (!req.session.userId) {
     return res.status(401).json({ error: "Unauthorized" });
   }
@@ -40,7 +46,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pool: sessionPool,
         createTableIfMissing: true,
       }),
-      secret: process.env.SESSION_SECRET,
+      secret: process.env.SESSION_SECRET!,
       resave: false,
       saveUninitialized: false,
       cookie: {
