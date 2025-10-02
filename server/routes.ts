@@ -10,6 +10,7 @@ import { Pool, neonConfig } from "@neondatabase/serverless";
 import ws from "ws";
 
 neonConfig.webSocketConstructor = ws;
+neonConfig.pipelineConnect = false;
 
 const PgSession = connectPgSimple(session);
 
@@ -38,7 +39,10 @@ if (!process.env.DATABASE_URL) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  const sessionPool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const sessionPool = new Pool({ 
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
   
   app.use(
     session({
