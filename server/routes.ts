@@ -5,6 +5,9 @@ import { insertUserSchema, insertTransactionSchema, insertBudgetSchema } from "@
 import bcrypt from "bcryptjs";
 import session from "express-session";
 import { z } from "zod";
+import createMemoryStore from "memorystore";
+
+const MemoryStore = createMemoryStore(session);
 
 declare module "express-session" {
   interface SessionData {
@@ -22,6 +25,9 @@ function requireAuth(req: Request, res: Response, next: Function) {
 export async function registerRoutes(app: Express): Promise<Server> {
   app.use(
     session({
+      store: new MemoryStore({
+        checkPeriod: 86400000,
+      }),
       secret: process.env.SESSION_SECRET || "expense-tracker-secret-key-change-in-production",
       resave: false,
       saveUninitialized: false,
@@ -29,6 +35,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         secure: process.env.NODE_ENV === "production",
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 24 * 7,
+        sameSite: 'lax',
       },
     })
   );

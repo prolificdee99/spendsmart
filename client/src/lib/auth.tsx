@@ -30,7 +30,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function checkAuth() {
     try {
-      const response = await fetch("/api/auth/me");
+      const response = await fetch("/api/auth/me", {
+        credentials: "include",
+      });
       if (response.ok) {
         const data = await response.json();
         setUser(data);
@@ -48,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ email, password }),
     });
     
@@ -65,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ name, email, password }),
     });
     
@@ -79,7 +83,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    });
     setUser(null);
     setLocation("/auth");
   }
