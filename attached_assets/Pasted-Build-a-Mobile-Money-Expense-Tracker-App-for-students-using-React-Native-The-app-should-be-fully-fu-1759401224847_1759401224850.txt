@@ -1,0 +1,97 @@
+Build a Mobile Money Expense Tracker App for students using React Native. The app should be fully functional on Android and iOS. Include the following features:
+
+1. User Authentication:
+
+Sign up and log in with Name, Email, and Password.
+
+Store user details securely using AsyncStorage or SecureStore.
+
+Password encryption for security.
+
+2. Transaction Tracking:
+
+Record each expense with:
+
+Amount (GHS – Cedis)
+
+Category: Food, Transport, Airtime, Other
+
+Mobile Money service: AirtelTigo, MTN, Telecel
+
+Date & time (auto-generated)
+
+Optional notes or tags
+
+Add, edit, and delete transactions.
+
+3. Budgets & Limits:
+
+Users can set spending limits per category (daily, weekly, monthly).
+
+Show alerts/notifications if the user is close to or exceeds their budget.
+
+4. Screens & Navigation:
+
+Bottom Tab Navigation with:
+
+Home: Quick summary of recent spending.
+
+Dashboard: Charts & analytics of expenses.
+
+Transaction: Add, edit, and view transactions.
+
+Budget: Set and manage category budgets.
+
+Profile: User info, theme toggle, logout.
+
+Reports: Detailed monthly/category-wise spending with charts.
+
+5. Visual Reports & Analytics:
+
+Pie charts for category-wise spending.
+
+Line charts for spending trends over time.
+
+Show total spent vs budget, highest spending category, average daily spending, and monthly comparisons.
+
+6. Theme & UI:
+
+Light and dark mode, automatic following system theme or manual toggle.
+
+Clean, responsive UI for both Android and iOS.
+
+7. SMS Integration (Optional):
+
+Parse incoming mobile money SMS to automatically log transactions (requires permissions).
+
+8. Extra Features:
+
+Recurring transactions (weekly/monthly).
+
+Search and filter transactions by category, date, or mobile money service.
+
+Export reports as PDF or CSV.
+
+Notifications for logging transactions or exceeding budgets.
+
+Data backup and optional cloud sync (Firebase or Google Drive).
+
+Expense tags/notes for better tracking.
+
+Optional currency converter for other currencies.
+
+9. Technical Requirements:
+
+Use React Navigation for navigation.
+
+Use chart libraries like react-native-chart-kit or Victory.
+
+Use Moment.js or dayjs for date formatting.
+
+Separate screens, components, services, and utilities for clean code.
+
+All transactions must be stored securely and persist across app restarts.
+
+Deliverable:
+
+A fully working React Native mobile app with all the above features, ready to run on Android and iOS.
