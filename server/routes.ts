@@ -5,9 +5,10 @@ import { insertUserSchema, insertTransactionSchema, insertBudgetSchema } from "@
 import bcrypt from "bcryptjs";
 import session from "express-session";
 import { z } from "zod";
-import createMemoryStore from "memorystore";
+import connectPgSimple from "connect-pg-simple";
+import { Pool } from "@neondatabase/serverless";
 
-const MemoryStore = createMemoryStore(session);
+const PgSession = connectPgSimple(session);
 
 declare module "express-session" {
   interface SessionData {
@@ -22,13 +23,24 @@ function requireAuth(req: Request, res: Response, next: Function) {
   next();
 }
 
+if (!process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET environment variable must be set");
+}
+
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL environment variable must be set");
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  const sessionPool = new Pool({ connectionString: process.env.DATABASE_URL });
+  
   app.use(
     session({
-      store: new MemoryStore({
-        checkPeriod: 86400000,
+      store: new PgSession({
+        pool: sessionPool,
+        createTableIfMissing: true,
       }),
-      secret: process.env.SESSION_SECRET || "expense-tracker-secret-key-change-in-production",
+      secret: process.env.SESSION_SECRET,
       resave: false,
       saveUninitialized: false,
       cookie: {
