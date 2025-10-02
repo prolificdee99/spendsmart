@@ -15,12 +15,16 @@ import {
 import { useState, useMemo } from "react";
 import { useAuth } from "@/lib/auth";
 import { useTransactions } from "@/hooks/use-transactions";
+import { useBudgets } from "@/hooks/use-budgets";
 import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Profile() {
   const [notifications, setNotifications] = useState(true);
   const { user, logout } = useAuth();
   const { data: transactions } = useTransactions();
+  const { data: budgets } = useBudgets();
+  const { toast } = useToast();
 
   const userInitials = useMemo(() => {
     if (!user?.name) return "U";
@@ -44,6 +48,64 @@ export default function Profile() {
     if (!user?.createdAt) return "N/A";
     return format(new Date(user.createdAt), "MMM yyyy");
   }, [user]);
+
+  const exportData = () => {
+    try {
+      if (!transactions || transactions.length === 0) {
+        toast({
+          title: "No data to export",
+          description: "You don't have any transactions to export yet.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      let csvContent = "data:text/csv;charset=utf-8,";
+      
+      csvContent += "TRANSACTIONS\n";
+      csvContent += "Date,Category,Service,Amount (GHS),Notes\n";
+      
+      transactions.forEach(t => {
+        const date = format(new Date(t.date), "yyyy-MM-dd HH:mm");
+        const notes = (t.notes || "").replace(/,/g, ";");
+        csvContent += `${date},${t.category},${t.service},${t.amount},"${notes}"\n`;
+      });
+
+      csvContent += "\n\nBUDGETS\n";
+      csvContent += "Category,Limit (GHS),Period\n";
+      
+      if (budgets && budgets.length > 0) {
+        budgets.forEach(b => {
+          csvContent += `${b.category},${b.limit},${b.period}\n`;
+        });
+      }
+
+      csvContent += "\n\nSUMMARY\n";
+      csvContent += `Total Transactions,${totalTransactions}\n`;
+      csvContent += `Total Spent,${totalSpent.toFixed(2)}\n`;
+      csvContent += `Member Since,${memberSince}\n`;
+      csvContent += `Export Date,${format(new Date(), "yyyy-MM-dd HH:mm")}\n`;
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `expense-tracker-export-${format(new Date(), "yyyy-MM-dd")}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Export successful",
+        description: `Your data has been exported successfully.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Export failed",
+        description: "An error occurred while exporting your data.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (!user) {
     return (
@@ -118,7 +180,7 @@ export default function Profile() {
 
             <button
               className="w-full p-4 flex items-center justify-between hover-elevate active-elevate-2"
-              onClick={() => console.log("Export data")}
+              onClick={exportData}
               data-testid="button-export-data"
             >
               <div className="flex items-center gap-3">
