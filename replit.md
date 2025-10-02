@@ -4,6 +4,11 @@
 This is a full-stack expense tracking application for managing mobile money expenses. Built with React (frontend) and Express (backend), it allows users to track transactions, set budgets, and monitor spending across different categories.
 
 ## Recent Changes
+- **2025-10-02**: Budget enhancements and export functionality
+  - Added overspending alerts with visual indicators and toast notifications
+  - Implemented monthly budget review showing last 3 months with spending trends
+  - Added CSV export functionality for transactions and budgets in Profile section
+  - Fixed alert dependency to properly track category changes
 - **2025-10-02**: Initial project import and setup in Replit environment
   - Configured workflow to run on port 5000 with webview output
   - Database schema already pushed to Neon PostgreSQL
@@ -40,10 +45,14 @@ shared/          - Shared types and schemas
 ### Key Features
 1. **User Authentication**: Signup/login with bcrypt password hashing
 2. **Transaction Management**: Create, read, update, delete expense transactions
-3. **Budget Management**: Set and track spending limits by category
+3. **Budget Management**: 
+   - Set and track spending limits by category
+   - Overspending alerts with visual indicators and notifications
+   - Monthly budget review showing last 3 months with trends
 4. **Categories**: Food, Transport, Airtime, Other
 5. **Mobile Money Services**: MTN, AirtelTigo, Telecel
 6. **Analytics**: Dashboard with spending trends and category breakdowns
+7. **Data Export**: CSV export of transactions, budgets, and summary data
 
 ## Database Schema
 
