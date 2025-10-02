@@ -12,10 +12,54 @@ import {
   LogOut,
   ChevronRight,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useAuth } from "@/lib/auth";
+import { useTransactions } from "@/hooks/use-transactions";
+import { format } from "date-fns";
 
 export default function Profile() {
   const [notifications, setNotifications] = useState(true);
+  const { user, logout } = useAuth();
+  const { data: transactions } = useTransactions();
+
+  const userInitials = useMemo(() => {
+    if (!user?.name) return "U";
+    const names = user.name.split(" ");
+    if (names.length >= 2) {
+      return `${names[0][0]}${names[1][0]}`.toUpperCase();
+    }
+    return user.name.slice(0, 2).toUpperCase();
+  }, [user]);
+
+  const totalTransactions = useMemo(() => {
+    return transactions?.length || 0;
+  }, [transactions]);
+
+  const totalSpent = useMemo(() => {
+    if (!transactions) return 0;
+    return transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+  }, [transactions]);
+
+  const memberSince = useMemo(() => {
+    if (!user?.createdAt) return "N/A";
+    return format(new Date(user.createdAt), "MMM yyyy");
+  }, [user]);
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <header className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+          <div className="max-w-md mx-auto px-4 h-14 flex items-center justify-between">
+            <h1 className="text-xl font-bold" data-testid="text-page-title">Profile</h1>
+            <ThemeToggle />
+          </div>
+        </header>
+        <main className="max-w-md mx-auto px-4 py-6">
+          <p className="text-center text-muted-foreground">Loading...</p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -31,13 +75,13 @@ export default function Profile() {
           <div className="flex items-center gap-4">
             <Avatar className="w-16 h-16">
               <AvatarFallback className="bg-primary text-primary-foreground text-xl">
-                JD
+                {userInitials}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <h2 className="text-xl font-bold" data-testid="text-user-name">John Doe</h2>
+              <h2 className="text-xl font-bold" data-testid="text-user-name">{user.name}</h2>
               <p className="text-sm text-muted-foreground" data-testid="text-user-email">
-                john.doe@student.edu
+                {user.email}
               </p>
             </div>
             <Button
@@ -95,16 +139,16 @@ export default function Profile() {
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex justify-between">
                 <span>Total Transactions</span>
-                <span className="font-semibold text-foreground">127</span>
+                <span className="font-semibold text-foreground">{totalTransactions}</span>
               </div>
               <div className="flex justify-between">
                 <span>Member Since</span>
-                <span className="font-semibold text-foreground">Jan 2025</span>
+                <span className="font-semibold text-foreground">{memberSince}</span>
               </div>
               <div className="flex justify-between">
                 <span>Total Spent</span>
                 <span className="font-semibold text-foreground font-mono">
-                  GHS 1,245.50
+                  GHS {totalSpent.toFixed(2)}
                 </span>
               </div>
             </div>
@@ -113,7 +157,7 @@ export default function Profile() {
           <Button
             variant="destructive"
             className="w-full"
-            onClick={() => console.log("Logout")}
+            onClick={() => logout()}
             data-testid="button-logout"
           >
             <LogOut className="w-4 h-4 mr-2" />

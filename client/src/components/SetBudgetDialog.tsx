@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Settings } from "lucide-react";
+import { useCreateOrUpdateBudget } from "@/hooks/use-budgets";
 
 type SetBudgetDialogProps = {
   category?: string;
@@ -33,10 +34,25 @@ export function SetBudgetDialog({
   const [open, setOpen] = useState(false);
   const [limit, setLimit] = useState(currentLimit?.toString() || "");
   const [period, setPeriod] = useState(currentPeriod || "");
+  
+  const saveBudget = useCreateOrUpdateBudget();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (open) {
+      setLimit(currentLimit?.toString() || "");
+      setPeriod(currentPeriod || "");
+    }
+  }, [open, currentLimit, currentPeriod]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Budget set:", { category, limit, period });
+    
+    await saveBudget.mutateAsync({
+      category: category as any,
+      limit: parseFloat(limit),
+      period: period as any,
+    });
+    
     setOpen(false);
   };
 
@@ -100,8 +116,13 @@ export function SetBudgetDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" className="flex-1" data-testid="button-save-budget">
-              Save Budget
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={saveBudget.isPending}
+              data-testid="button-save-budget"
+            >
+              {saveBudget.isPending ? "Saving..." : "Save Budget"}
             </Button>
           </div>
         </form>

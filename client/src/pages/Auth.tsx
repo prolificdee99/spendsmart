@@ -4,19 +4,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Wallet } from "lucide-react";
-import { useLocation } from "wouter";
+import { useAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [, setLocation] = useLocation();
+  const [isLoading, setIsLoading] = useState(false);
+  const { login, signup } = useAuth();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(isLogin ? "Login" : "Sign up", { name, email, password });
-    setLocation("/");
+    setIsLoading(true);
+
+    try {
+      if (isLogin) {
+        await login(email, password);
+      } else {
+        await signup(name, email, password);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -76,8 +94,13 @@ export default function Auth() {
             />
           </div>
 
-          <Button type="submit" className="w-full" data-testid="button-submit-auth">
-            {isLogin ? "Login" : "Sign Up"}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isLoading}
+            data-testid="button-submit-auth"
+          >
+            {isLoading ? "Loading..." : isLogin ? "Login" : "Sign Up"}
           </Button>
         </form>
 

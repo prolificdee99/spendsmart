@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { TransactionCard } from "@/components/TransactionCard";
 import { AddTransactionSheet } from "@/components/AddTransactionSheet";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -12,60 +11,59 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, Filter } from "lucide-react";
+import { useTransactions, useDeleteTransaction } from "@/hooks/use-transactions";
 
 export default function Transactions() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [serviceFilter, setServiceFilter] = useState("all");
+  
+  const { data: transactions, isLoading } = useTransactions();
+  const deleteTransaction = useDeleteTransaction();
 
-  const allTransactions = [
-    {
-      id: "1",
-      amount: 25.50,
-      category: "Food" as const,
-      service: "MTN" as const,
-      date: new Date(),
-      notes: "Lunch at campus cafeteria",
-    },
-    {
-      id: "2",
-      amount: 10.00,
-      category: "Transport" as const,
-      service: "AirtelTigo" as const,
-      date: new Date(Date.now() - 3600000),
-    },
-    {
-      id: "3",
-      amount: 5.00,
-      category: "Airtime" as const,
-      service: "Telecel" as const,
-      date: new Date(Date.now() - 7200000),
-      notes: "Data bundle",
-    },
-    {
-      id: "4",
-      amount: 15.00,
-      category: "Food" as const,
-      service: "MTN" as const,
-      date: new Date(Date.now() - 86400000),
-      notes: "Breakfast",
-    },
-    {
-      id: "5",
-      amount: 20.00,
-      category: "Transport" as const,
-      service: "Telecel" as const,
-      date: new Date(Date.now() - 172800000),
-    },
-  ];
+  const allTransactions = useMemo(() => {
+    if (!transactions) return [];
+    return transactions
+      .map(t => ({
+        ...t,
+        amount: parseFloat(t.amount),
+        date: new Date(t.date),
+        category: t.category as "Food" | "Transport" | "Airtime" | "Other",
+        service: t.service as "MTN" | "AirtelTigo" | "Telecel",
+        notes: t.notes || undefined,
+      }))
+      .sort((a, b) => b.date.getTime() - a.date.getTime());
+  }, [transactions]);
 
-  const filteredTransactions = allTransactions.filter((t) => {
-    const matchesSearch = t.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.category.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || t.category === categoryFilter;
-    const matchesService = serviceFilter === "all" || t.service === serviceFilter;
-    return matchesSearch && matchesCategory && matchesService;
-  });
+  const filteredTransactions = useMemo(() => {
+    return allTransactions.filter((t) => {
+      const matchesSearch = t.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.category.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = categoryFilter === "all" || t.category === categoryFilter;
+      const matchesService = serviceFilter === "all" || t.service === serviceFilter;
+      return matchesSearch && matchesCategory && matchesService;
+    });
+  }, [allTransactions, searchTerm, categoryFilter, serviceFilter]);
+
+  const handleDelete = (id: string) => {
+    deleteTransaction.mutate(id);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <header className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+          <div className="max-w-md mx-auto px-4 h-14 flex items-center justify-between">
+            <h1 className="text-xl font-bold" data-testid="text-page-title">Transactions</h1>
+            <ThemeToggle />
+          </div>
+        </header>
+        <main className="max-w-md mx-auto px-4 py-6">
+          <p className="text-center text-muted-foreground">Loading...</p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -124,12 +122,14 @@ export default function Transactions() {
                 key={transaction.id}
                 {...transaction}
                 onEdit={() => console.log("Edit", transaction.id)}
-                onDelete={() => console.log("Delete", transaction.id)}
+                onDelete={() => handleDelete(transaction.id)}
               />
             ))
           ) : (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">No transactions found</p>
+              <p className="text-muted-foreground">
+                {allTransactions.length === 0 ? "No transactions yet" : "No transactions found"}
+              </p>
             </div>
           )}
         </div>

@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
+import { useCreateTransaction } from "@/hooks/use-transactions";
 
 export function AddTransactionSheet() {
   const [open, setOpen] = useState(false);
@@ -26,10 +27,19 @@ export function AddTransactionSheet() {
   const [category, setCategory] = useState("");
   const [service, setService] = useState("");
   const [notes, setNotes] = useState("");
+  
+  const createTransaction = useCreateTransaction();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Transaction added:", { amount, category, service, notes });
+    
+    await createTransaction.mutateAsync({
+      amount: parseFloat(amount),
+      category: category as any,
+      service: service as any,
+      notes: notes || undefined,
+    });
+    
     setOpen(false);
     setAmount("");
     setCategory("");
@@ -122,8 +132,13 @@ export function AddTransactionSheet() {
             >
               Cancel
             </Button>
-            <Button type="submit" className="flex-1" data-testid="button-submit">
-              Add Transaction
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={createTransaction.isPending}
+              data-testid="button-submit"
+            >
+              {createTransaction.isPending ? "Adding..." : "Add Transaction"}
             </Button>
           </div>
         </form>
