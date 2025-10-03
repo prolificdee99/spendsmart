@@ -5,15 +5,15 @@ import { apiRequest } from "./queryClient";
 type User = {
   id: string;
   name: string;
-  email: string;
+  phone: string;
   createdAt: string;
 };
 
 type AuthContextType = {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
+  login: (phone: string, password: string) => Promise<void>;
+  signup: (name: string, phone: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -46,12 +46,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function login(email: string, password: string) {
+  async function login(phone: string, password: string) {
     const response = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ phone, password }),
     });
     
     if (!response.ok) {
@@ -64,12 +64,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLocation("/");
   }
 
-  async function signup(name: string, email: string, password: string) {
+  async function signup(name: string, phone: string, password: string) {
     const response = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, phone, password }),
     });
     
     if (!response.ok) {

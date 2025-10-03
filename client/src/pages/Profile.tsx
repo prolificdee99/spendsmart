@@ -142,8 +142,8 @@ export default function Profile() {
             </Avatar>
             <div className="flex-1">
               <h2 className="text-xl font-bold" data-testid="text-user-name">{user.name}</h2>
-              <p className="text-sm text-muted-foreground" data-testid="text-user-email">
-                {user.email}
+              <p className="text-sm text-muted-foreground" data-testid="text-user-phone">
+                {user.phone}
               </p>
             </div>
             <Button

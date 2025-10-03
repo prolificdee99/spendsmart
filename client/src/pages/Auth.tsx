@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { login, signup } = useAuth();
@@ -22,9 +22,9 @@ export default function Auth() {
 
     try {
       if (isLogin) {
-        await login(email, password);
+        await login(phone, password);
       } else {
-        await signup(name, email, password);
+        await signup(name, phone, password);
       }
     } catch (error: any) {
       toast({
@@ -69,15 +69,15 @@ export default function Auth() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="phone">Phone Number</Label>
             <Input
-              id="email"
-              type="email"
-              placeholder="you@student.edu"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="phone"
+              type="tel"
+              placeholder="0241234567"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               required
-              data-testid="input-email"
+              data-testid="input-phone"
             />
           </div>
 
