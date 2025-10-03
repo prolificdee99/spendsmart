@@ -1,109 +1,133 @@
-# Expense Tracker Application
+# SpendSmart - Mobile Money Expense Tracker
 
 ## Overview
-This is a full-stack expense tracking application for managing mobile money expenses. Built with React (frontend) and Express (backend), it allows users to track transactions, set budgets, and monitor spending across different categories.
+SpendSmart is a full-stack expense tracker built for students to track mobile money expenses in Ghana. The application uses phone numbers instead of email for authentication, supporting MTN, AirtelTigo, and Telecel mobile money services.
 
-## Recent Changes
-- **2025-10-02**: Budget enhancements and export functionality
-  - Added overspending alerts with visual indicators and toast notifications
-  - Implemented monthly budget review showing last 3 months with spending trends
-  - Added CSV export functionality for transactions and budgets in Profile section
-  - Fixed alert dependency to properly track category changes
-- **2025-10-02**: Initial project import and setup in Replit environment
-  - Configured workflow to run on port 5000 with webview output
-  - Database schema already pushed to Neon PostgreSQL
-  - Verified authentication system is working correctly
-  - Deployment configuration set to autoscale
-
-## Architecture
-
-### Tech Stack
-- **Frontend**: React + Vite + TypeScript + Tailwind CSS + shadcn/ui
-- **Backend**: Express.js + TypeScript
-- **Database**: PostgreSQL (Neon Serverless)
+## Tech Stack
+- **Frontend**: React + Vite + TailwindCSS + shadcn/ui
+- **Backend**: Node.js + Express + TypeScript
+- **Database**: PostgreSQL (Neon-backed via Replit)
+- **Authentication**: Express-Session with PostgreSQL session store
 - **ORM**: Drizzle ORM
-- **Authentication**: Express sessions with PostgreSQL session store
-- **Routing**: Wouter (client-side)
 
-### Project Structure
+## Project Structure
 ```
-client/          - React frontend application
-  src/
-    components/  - Reusable UI components (shadcn + custom)
-    pages/       - Page components (Dashboard, Transactions, Budget, etc.)
-    hooks/       - Custom React hooks
-    lib/         - Utilities and query client setup
-server/          - Express backend
-  index.ts       - Main server entry point
-  routes.ts      - API route handlers
-  storage.ts     - Database access layer
-  vite.ts        - Vite dev server setup
-shared/          - Shared types and schemas
-  schema.ts      - Drizzle schema definitions and Zod validation
+├── client/              # Frontend React application
+│   ├── src/
+│   │   ├── components/  # Reusable UI components
+│   │   ├── hooks/       # Custom React hooks
+│   │   ├── lib/         # Utilities and API client
+│   │   └── pages/       # Page components (Auth, Dashboard, etc.)
+├── server/              # Backend Express application
+│   ├── index.ts         # Server entry point
+│   ├── routes.ts        # API route definitions
+│   ├── storage.ts       # Database access layer
+│   └── vite.ts          # Vite middleware setup
+├── shared/              # Shared types and schemas
+│   └── schema.ts        # Drizzle database schemas
+└── .env                 # Environment variables (not in git)
 ```
 
-### Key Features
-1. **User Authentication**: Signup/login with bcrypt password hashing
-2. **Transaction Management**: Create, read, update, delete expense transactions
-3. **Budget Management**: 
-   - Set and track spending limits by category
-   - Overspending alerts with visual indicators and notifications
-   - Monthly budget review showing last 3 months with trends
-4. **Categories**: Food, Transport, Airtime, Other
-5. **Mobile Money Services**: MTN, AirtelTigo, Telecel
-6. **Analytics**: Dashboard with spending trends and category breakdowns
-7. **Data Export**: CSV export of transactions, budgets, and summary data
+## Recent Changes (October 3, 2025)
+### GitHub Import Setup
+- Fixed schema mismatch: Updated from email-based to phone-based authentication
+- Updated `storage.ts` to use phone field for user lookup
+- Updated `routes.ts` to accept phone number in login/signup
+- Updated frontend Auth and Profile pages to use phone instead of email
+- Fixed ES module issues in `vite.config.ts` (__dirname not available)
+- Configured Vite to allow all hosts for Replit proxy support
+- Created PostgreSQL database and pushed schema
+- Configured workflow to run on port 5000
+- Set up deployment for autoscale
+
+## Environment Setup
+The application requires the following environment variables (already configured):
+- `DATABASE_URL`: PostgreSQL connection string (auto-configured by Replit)
+- `SESSION_SECRET`: Secret for session encryption (auto-generated)
+- `PORT`: Server port (set to 5000)
+
+## Development
+The application runs on port 5000 in development mode with:
+- Hot Module Replacement (HMR) via Vite
+- Express backend serving both API and frontend
+- PostgreSQL session storage for authentication
+
+### Running Locally
+The workflow "Start application" is configured to run:
+```bash
+NODE_ENV=development npm run dev:server
+```
+
+This starts the Express server which:
+1. Serves API routes at `/api/*`
+2. Integrates Vite middleware for frontend development
+3. Runs on port 5000 with host 0.0.0.0
 
 ## Database Schema
+### Users
+- `id`: UUID (auto-generated)
+- `name`: Text (full name)
+- `phone`: Varchar(15) (10-15 digits, unique)
+- `password`: Text (bcrypt hashed)
+- `createdAt`: Timestamp
 
-### Tables
-1. **users**: User accounts with email authentication
-2. **transactions**: Expense records linked to users
-3. **budgets**: Budget limits per category per user
-4. **session**: Express session storage (auto-created)
+### Transactions
+- `id`: UUID
+- `userId`: Foreign key to users
+- `amount`: Decimal(10,2)
+- `category`: Enum (Food, Transport, Airtime, Other)
+- `service`: Enum (MTN, AirtelTigo, Telecel)
+- `notes`: Text (optional)
+- `date`: Timestamp
 
-## Configuration
+### Budgets
+- `id`: UUID
+- `userId`: Foreign key to users
+- `category`: Enum (Food, Transport, Airtime, Other)
+- `limit`: Decimal(10,2)
+- `period`: Enum (daily, weekly, monthly)
+- `createdAt`: Timestamp
+- `updatedAt`: Timestamp
 
-### Environment Variables
-- `DATABASE_URL`: Neon PostgreSQL connection string (configured)
-- `SESSION_SECRET`: Secret for session management (configured)
-- `PORT`: Server port (default: 5000)
-- `NODE_ENV`: Environment mode (development/production)
+## Deployment
+Configured for Replit Autoscale deployment:
+- Build command: `npm run build`
+- Start command: `npm run start`
+- Production builds compile both frontend (Vite) and backend (esbuild)
 
-### Development
-- Server binds to `0.0.0.0:5000` to work with Replit's proxy
-- Vite configured with `allowedHosts: true` for Replit iframe proxy
-- HMR (Hot Module Replacement) enabled for fast development
+## API Endpoints
+### Authentication
+- `POST /api/auth/signup` - Create new user (requires name, phone, password)
+- `POST /api/auth/login` - Login (requires phone, password)
+- `POST /api/auth/logout` - Logout
+- `GET /api/auth/me` - Get current user
 
-### Deployment
-- **Target**: Autoscale (stateless web application)
-- **Build**: `npm run build` (builds both frontend and backend)
-- **Run**: `npm run start` (production server)
+### Transactions
+- `GET /api/transactions` - List all user transactions
+- `GET /api/transactions/:id` - Get single transaction
+- `POST /api/transactions` - Create transaction
+- `PATCH /api/transactions/:id` - Update transaction
+- `DELETE /api/transactions/:id` - Delete transaction
+
+### Budgets
+- `GET /api/budgets` - List all user budgets
+- `GET /api/budgets/:id` - Get single budget
+- `POST /api/budgets` - Create/update budget (auto-updates if exists)
+- `PATCH /api/budgets/:id` - Update budget
+- `DELETE /api/budgets/:id` - Delete budget
+
+### Analytics
+- `GET /api/analytics/summary` - Get spending summary and budget status
+
+## Architecture Decisions
+### Phone-Based Authentication
+The application uses phone numbers instead of email addresses, reflecting the mobile money context where phone numbers are the primary identifier.
+
+### Single Port Architecture
+Both frontend and backend run on port 5000. In development, Express uses Vite middleware mode. In production, Express serves pre-built static files.
+
+### Session Storage
+Uses PostgreSQL for session storage (via connect-pg-simple) instead of in-memory storage, ensuring sessions persist across server restarts and scale horizontally.
 
 ## User Preferences
 None documented yet.
-
-## Running the Project
-
-### Development
-The workflow "Start application" runs `npm run dev` which:
-1. Starts Express server in development mode
-2. Sets up Vite dev server with HMR
-3. Serves on port 5000
-
-### Database Operations
-- `npm run db:push`: Push schema changes to database
-- Database uses Neon serverless PostgreSQL with websocket connections
-
-### Scripts
-- `npm run dev`: Start development server
-- `npm run build`: Build for production
-- `npm run start`: Start production server
-- `npm run check`: TypeScript type checking
-- `npm run db:push`: Push database schema
-
-## Notes
-- Application uses in-memory sessions in development, PostgreSQL-backed sessions in production
-- Frontend uses TanStack Query for data fetching and caching
-- All API routes are under `/api/*` prefix
-- Authentication required for all protected routes
