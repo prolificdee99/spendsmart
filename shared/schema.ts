@@ -1,12 +1,12 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, decimal, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
-  email: text("email").notNull().unique(),
+  phone: varchar("phone", { length: 15 }).notNull().unique(), // 📌 phone replaces email
   password: text("password").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -32,15 +32,17 @@ export const budgets = pgTable("budgets", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// ✅ Schema for inserting a user
 export const insertUserSchema = createInsertSchema(users).pick({
   name: true,
-  email: true,
+  phone: true,
   password: true,
 }).extend({
-  email: z.string().email(),
+  phone: z.string().regex(/^\d{10,15}$/, "Phone must be 10–15 digits"),
   password: z.string().min(6),
 });
 
+// ✅ Transaction schema
 export const insertTransactionSchema = createInsertSchema(transactions).omit({
   id: true,
   userId: true,
@@ -52,6 +54,7 @@ export const insertTransactionSchema = createInsertSchema(transactions).omit({
   date: z.string().or(z.date()).optional(),
 });
 
+// ✅ Budget schema
 export const insertBudgetSchema = createInsertSchema(budgets).omit({
   id: true,
   userId: true,
