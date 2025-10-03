@@ -78,9 +78,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const data = insertUserSchema.parse(req.body);
       
-      const existingUser = await storage.getUserByEmail(data.email);
+      const existingUser = await storage.getUserByEmail(data.phone);
       if (existingUser) {
-        return res.status(400).json({ error: "Email already registered" });
+        return res.status(400).json({ error: "Phone number already registered" });
       }
 
       const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -111,9 +111,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/login", async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { phone, password } = req.body;
       
-      const user = await storage.getUserByEmail(email);
+      const user = await storage.getUserByEmail(phone);
       if (!user) {
         return res.status(401).json({ error: "Invalid credentials" });
       }

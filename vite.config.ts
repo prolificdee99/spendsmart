@@ -17,8 +17,9 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
-    allowedHosts: ["zcqtwc-5173.csb.app"], // 👈 allow your sandbox domain
-    host: true, // allow external access
+    host: "0.0.0.0",
+    port: 5173,
+    strictPort: false,
     fs: {
       strict: true,
       deny: ["**/.*"],
